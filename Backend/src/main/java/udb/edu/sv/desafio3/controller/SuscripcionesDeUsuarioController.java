@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import udb.edu.sv.desafio3.dto.SuscUsersDTo;
+import udb.edu.sv.desafio3.dto.SuscUsersResponseDto;
 import udb.edu.sv.desafio3.model.Suscripcion;
 import udb.edu.sv.desafio3.model.SuscripcionesDeUsuario;
 import udb.edu.sv.desafio3.model.Usuarios;
@@ -20,6 +21,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/suscripciones_de_usuarios")
+@CrossOrigin(origins = "http://localhost:5173")
 public class SuscripcionesDeUsuarioController {
 
     @Autowired
@@ -31,79 +33,88 @@ public class SuscripcionesDeUsuarioController {
     @Autowired
     private SuscripcionRepository suscripcionRepository;
 
-    @Operation(summary = "Crear una nueva suscripción de usuario", description = "Asocia un usuario a un plan de suscripción.")
-    @ApiResponse(responseCode = "200", description = "Suscripción de usuario creada exitosamente")
-    @ApiResponse(responseCode = "400", description = "Error de validación o ID de usuario/suscripción no encontrado")
+    // ✅ CREAR SUSCRIPCIÓN
     @PostMapping
-    public ResponseEntity<SuscripcionesDeUsuario> crearSuscripcionDeUsuario(@Valid @RequestBody SuscUsersDTo dto) {
+    public ResponseEntity<SuscripcionesDeUsuario> crearSuscripcionDeUsuario(
+            @Valid @RequestBody SuscUsersDTo dto) {
+
         Optional<Usuarios> usuarioOpt = usuariosRepository.findById(dto.getIdUsuario());
         Optional<Suscripcion> planOpt = suscripcionRepository.findById(dto.getIdSuscripcion());
 
-        //Validacion para encontrar un usuario o suscripcion
         if (usuarioOpt.isEmpty() || planOpt.isEmpty()) {
             return ResponseEntity.badRequest().build();
         }
 
-        SuscripcionesDeUsuario nuevaSuscripcion = new SuscripcionesDeUsuario();
-        nuevaSuscripcion.setUsuario(usuarioOpt.get());
-        nuevaSuscripcion.setSuscripcion(planOpt.get());
-        nuevaSuscripcion.setFechaInicio(dto.getFechaInicio());
-        nuevaSuscripcion.setFechaFin(dto.getFechaInicio().plusMonths(planOpt.get().getDuracionMeses()));
-        nuevaSuscripcion.setEstado("ACTIVA");
+        SuscripcionesDeUsuario nueva = new SuscripcionesDeUsuario();
+        nueva.setUsuario(usuarioOpt.get());
+        nueva.setSuscripcion(planOpt.get());
+        nueva.setFechaInicio(dto.getFechaInicio());
+        nueva.setFechaFin(dto.getFechaInicio().plusMonths(planOpt.get().getDuracionMeses()));
+        nueva.setEstado("ACTIVA");
 
-        SuscripcionesDeUsuario saved = suscripcionesDeUsuarioRepository.save(nuevaSuscripcion);
-        return ResponseEntity.ok(saved);
+        return ResponseEntity.ok(suscripcionesDeUsuarioRepository.save(nueva));
     }
 
-    @Operation(summary = "Obtener todas las suscripciones de usuario", description = "Recupera la lista de todas las suscripciones de usuario")
-    @ApiResponse(responseCode = "200", description = "Lista de suscripciones recuperada exitosamente")
+    // ✅ LISTAR TODAS — AHORA CON DTO CORREGIDO
     @GetMapping
-    public ResponseEntity<List<SuscripcionesDeUsuario>> listarSuscripciones() {
-        return ResponseEntity.ok(suscripcionesDeUsuarioRepository.findAll());
+    public ResponseEntity<List<SuscUsersResponseDto>> listarSuscripciones() {
+
+        List<SuscUsersResponseDto> lista = suscripcionesDeUsuarioRepository.findAll()
+                .stream()
+                .map(s -> new SuscUsersResponseDto(
+                        s.getId(),
+                        s.getUsuario().getId(),
+                        s.getSuscripcion().getId(),
+                        s.getFechaInicio(),
+                        s.getFechaFin(),
+                        s.getEstado()
+                ))
+                .toList();
+
+        return ResponseEntity.ok(lista);
     }
 
-    @Operation(summary = "Obtener suscripción de usuario por ID", description = "Recupera una suscripción de usuario específica por su ID")
-    @ApiResponse(responseCode = "200", description = "Suscripción de usuario encontrada")
-    @ApiResponse(responseCode = "404", description = "Suscripción de usuario no encontrada")
+    // ✅ OBTENER POR ID
     @GetMapping("/{id}")
-    public ResponseEntity<SuscripcionesDeUsuario> obtenerPorId(@PathVariable Long id) {
+    public ResponseEntity<SuscUsersResponseDto> obtenerPorId(@PathVariable Long id) {
+
         return suscripcionesDeUsuarioRepository.findById(id)
+                .map(s -> new SuscUsersResponseDto(
+                        s.getId(),
+                        s.getUsuario().getId(),
+                        s.getSuscripcion().getId(),
+                        s.getFechaInicio(),
+                        s.getFechaFin(),
+                        s.getEstado()
+                ))
                 .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+                .orElse(ResponseEntity.notFound().build());
     }
 
-    //Actualizar una suscripcion
-    @Operation(summary = "Actualizar una suscripción de usuario", description = "Actualiza la información de una suscripción de usuario existente por ID")
-    @ApiResponse(responseCode = "200", description = "Suscripción de usuario actualizada exitosamente")
-    @ApiResponse(responseCode = "400", description = "Error de validación o ID de usuario/suscripción no encontrado")
-    @ApiResponse(responseCode = "404", description = "Suscripción de usuario no encontrada")
+    // ✅ ACTUALIZAR
     @PutMapping("/{id}")
-    public ResponseEntity<?> actualizarSuscripciones(@PathVariable Long id, @Valid @RequestBody SuscUsersDTo dto) {
-        Optional<SuscripcionesDeUsuario> suscripcionExistenteOpt = suscripcionesDeUsuarioRepository.findById(id);
-        if (suscripcionExistenteOpt.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
+    public ResponseEntity<?> actualizarSuscripciones(
+            @PathVariable Long id,
+            @Valid @RequestBody SuscUsersDTo dto) {
+
+        Optional<SuscripcionesDeUsuario> existenteOpt = suscripcionesDeUsuarioRepository.findById(id);
+        if (existenteOpt.isEmpty()) return ResponseEntity.notFound().build();
 
         Optional<Usuarios> usuarioOpt = usuariosRepository.findById(dto.getIdUsuario());
         Optional<Suscripcion> planOpt = suscripcionRepository.findById(dto.getIdSuscripcion());
-        if (usuarioOpt.isEmpty() || planOpt.isEmpty()) {
-            return ResponseEntity.badRequest().build();
-        }
+        if (usuarioOpt.isEmpty() || planOpt.isEmpty()) return ResponseEntity.badRequest().build();
 
-        SuscripcionesDeUsuario suscripcionExistente = suscripcionExistenteOpt.get();
-        suscripcionExistente.setUsuario(usuarioOpt.get());
-        suscripcionExistente.setSuscripcion(planOpt.get());
-        suscripcionExistente.setFechaInicio(dto.getFechaInicio());
-        suscripcionExistente.setFechaFin(dto.getFechaInicio().plusMonths(planOpt.get().getDuracionMeses()));
-        suscripcionExistente.setEstado("ACTIVA");
+        SuscripcionesDeUsuario existente = existenteOpt.get();
+        existente.setUsuario(usuarioOpt.get());
+        existente.setSuscripcion(planOpt.get());
+        existente.setFechaInicio(dto.getFechaInicio());
+        existente.setFechaFin(dto.getFechaInicio().plusMonths(planOpt.get().getDuracionMeses()));
+        existente.setEstado(dto.getEstado() != null ? dto.getEstado() : "ACTIVA");
 
-        SuscripcionesDeUsuario updated = suscripcionesDeUsuarioRepository.save(suscripcionExistente);
-        return ResponseEntity.ok(updated);
+        return ResponseEntity.ok(suscripcionesDeUsuarioRepository.save(existente));
     }
-//Actualizar una suscripcion
-    @Operation(summary = "Eliminar una suscripción de usuario", description = "Elimina una suscripción de usuario existente por ID")
-    @ApiResponse(responseCode = "204", description = "Suscripción de usuario eliminada exitosamente")
-    @ApiResponse(responseCode = "404", description = "Suscripción de usuario no encontrada")
+
+    // ✅ ELIMINAR
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminarSuscripcion(@PathVariable Long id) {
         if (suscripcionesDeUsuarioRepository.existsById(id)) {

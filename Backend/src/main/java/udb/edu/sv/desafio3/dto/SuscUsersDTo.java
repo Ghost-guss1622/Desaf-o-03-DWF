@@ -1,7 +1,6 @@
 package udb.edu.sv.desafio3.dto;
 
 import jakarta.validation.constraints.NotNull;
-
 import java.time.LocalDate;
 
 public class SuscUsersDTo {
@@ -15,27 +14,23 @@ public class SuscUsersDTo {
     @NotNull(message = "La fecha de inicio es obligatoria.")
     private LocalDate fechaInicio;
 
-    public Long getIdUsuario() {
-        return idUsuario;
-    }
+    @NotNull(message = "La fecha final es obligatoria.")
+    private LocalDate fechaFin;
 
-    public void setIdUsuario(Long idUsuario) {
-        this.idUsuario = idUsuario;
-    }
+    private String estado;
 
-    public Long getIdSuscripcion() {
-        return idSuscripcion;
-    }
+    public Long getIdUsuario() { return idUsuario; }
+    public void setIdUsuario(Long idUsuario) { this.idUsuario = idUsuario; }
 
-    public void setIdSuscripcion(Long idSuscripcion) {
-        this.idSuscripcion = idSuscripcion;
-    }
+    public Long getIdSuscripcion() { return idSuscripcion; }
+    public void setIdSuscripcion(Long idSuscripcion) { this.idSuscripcion = idSuscripcion; }
 
-    public LocalDate getFechaInicio() {
-        return fechaInicio;
-    }
+    public LocalDate getFechaInicio() { return fechaInicio; }
+    public void setFechaInicio(LocalDate fechaInicio) { this.fechaInicio = fechaInicio; }
 
-    public void setFechaInicio(LocalDate fechaInicio) {
-        this.fechaInicio = fechaInicio;
-    }
+    public LocalDate getFechaFin() { return fechaFin; }
+    public void setFechaFin(LocalDate fechaFin) { this.fechaFin = fechaFin; }
+
+    public String getEstado() { return estado; }
+    public void setEstado(String estado) { this.estado = estado; }
 }

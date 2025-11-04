@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate, useNavigate } from "react-router-dom";
-import { useAuth, AuthProvider } from './Auth/AuthContext.jsx';
+import { AuthProvider, useAuth } from './Auth/AuthContext.jsx';
 import ProtectedRoute from './Auth/ProtectedRoute.jsx';
 
+import CrudPage from './CrudPage.jsx';
+import CRUDSuscUsers from './CRUDSuscUsers.jsx';
+import Panel from './Panel.jsx';
 
 function Login() {
     const [username, setUsername] = useState('');
@@ -14,7 +17,7 @@ function Login() {
     useEffect(() => {
         if (isAuthenticated) {
             const role = localStorage.getItem('userRole');
-            if (role === 'ADMIN') navigate('/admin', { replace: true });
+            if (role === 'ADMIN') navigate('/panel', { replace: true });
             else navigate('/', { replace: true });
         }
     }, [isAuthenticated, navigate]);
@@ -33,10 +36,10 @@ function Login() {
             const data = await res.json();
 
             if (res.ok) {
-                //Guarda el token
                 login(data.token, data.role ? data.role.toUpperCase() : "ADMIN");
+            } else {
+                setError(data.error || 'Credenciales inválidas');
             }
-            else setError(data.error || 'Credenciales inválidas');
         } catch {
             setError('Error de conexión con el servidor.');
         }
@@ -49,10 +52,16 @@ function Login() {
             <form onSubmit={handleSubmit} className="w-full max-w-sm bg-white p-8 rounded-xl shadow-2xl space-y-6">
                 <h2 className="text-3xl font-bold text-center text-indigo-700">Login</h2>
 
-                <input type="text" placeholder="Usuario" value={username} onChange={(e) => setUsername(e.target.value)} required className="w-full px-4 py-3 border border-gray-300 rounded-lg" />
-                <input type="password" placeholder="Contraseña" value={password} onChange={(e) => setPassword(e.target.value)} required className="w-full px-4 py-3 border border-gray-300 rounded-lg" />
+                <input type="text" placeholder="Usuario" value={username}
+                       onChange={(e) => setUsername(e.target.value)}
+                       required className="w-full px-4 py-3 border border-gray-300 rounded-lg" />
 
-                <button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg">
+                <input type="password" placeholder="Contraseña" value={password}
+                       onChange={(e) => setPassword(e.target.value)}
+                       required className="w-full px-4 py-3 border border-gray-300 rounded-lg" />
+
+                <button type="submit"
+                        className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg">
                     Entrar
                 </button>
 
@@ -66,7 +75,6 @@ function Login() {
     );
 }
 
-
 export default function App() {
     return (
         <BrowserRouter>
@@ -75,15 +83,33 @@ export default function App() {
                     <Route path="/" element={<Login />} />
 
                     <Route
-                        path="/admin"
+                        path="/panel"
                         element={
                             <ProtectedRoute allowedRoles={['ADMIN']}>
-                                <div>Página de Admin Temporal</div>
+                                <Panel />
                             </ProtectedRoute>
                         }
                     />
-                    <Route path="*" element={<Navigate to="/" replace />} />
 
+                    <Route
+                        path="/crud"
+                        element={
+                            <ProtectedRoute allowedRoles={['ADMIN']}>
+                                <CrudPage />
+                            </ProtectedRoute>
+                        }
+                    />
+
+                    <Route
+                        path="/crudusuariossusc"
+                        element={
+                            <ProtectedRoute allowedRoles={['ADMIN']}>
+                                <CRUDSuscUsers />
+                            </ProtectedRoute>
+                        }
+                    />
+
+                    <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
             </AuthProvider>
         </BrowserRouter>
