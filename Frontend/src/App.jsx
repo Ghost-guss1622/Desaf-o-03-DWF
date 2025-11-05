@@ -7,6 +7,8 @@ import CrudPage from './CrudPage.jsx';
 import CRUDSuscUsers from './CRUDSuscUsers.jsx';
 import Panel from './Panel.jsx';
 
+import './App.css'
+
 function Login() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
@@ -48,28 +50,33 @@ function Login() {
     if (isAuthenticated) return <div className="text-center p-8">Redirigiendo...</div>;
 
     return (
-        <div className="flex items-center justify-center min-h-screen bg-gray-100 p-4">
-            <form onSubmit={handleSubmit} className="w-full max-w-sm bg-white p-8 rounded-xl shadow-2xl space-y-6">
-                <h2 className="text-3xl font-bold text-center text-indigo-700">Login</h2>
+        <div className="login-container">
+            <form onSubmit={handleSubmit} className="login-box">
+                <h2 className="login-title">Login</h2>
 
-                <input type="text" placeholder="Usuario" value={username}
-                       onChange={(e) => setUsername(e.target.value)}
-                       required className="w-full px-4 py-3 border border-gray-300 rounded-lg" />
+                <input
+                    type="text"
+                    placeholder="Usuario"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    className="login-input"
+                    required
+                />
 
-                <input type="password" placeholder="Contraseña" value={password}
-                       onChange={(e) => setPassword(e.target.value)}
-                       required className="w-full px-4 py-3 border border-gray-300 rounded-lg" />
+                <input
+                    type="password"
+                    placeholder="Contraseña"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="login-input"
+                    required
+                />
 
-                <button type="submit"
-                        className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg">
+                <button type="submit" className="login-btn">
                     Entrar
                 </button>
 
-                {error && (
-                    <p className="text-red-600 text-sm text-center bg-red-100 p-2 rounded-lg border border-red-300">
-                        {error}
-                    </p>
-                )}
+                {error && <p className="login-error">{error}</p>}
             </form>
         </div>
     );

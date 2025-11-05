@@ -14,7 +14,7 @@ export const AuthProvider = ({ children }) => {
         console.log("Usuario deslogueado");
     };
 
-    // Mostrar token en consola al hacer login
+    //Mostrar token en consola al hacer login
     useEffect(() => {
         if (isAuthenticated) {
             const token = localStorage.getItem("userToken");
@@ -22,7 +22,7 @@ export const AuthProvider = ({ children }) => {
         }
     }, [isAuthenticated]);
 
-    // Logout por inactividad de 15 min
+    //Logout por inactividad de 15 min
     useEffect(() => {
         if (!isAuthenticated) return;
 
@@ -30,7 +30,7 @@ export const AuthProvider = ({ children }) => {
 
         const resetTimer = () => {
             clearTimeout(timeout);
-            timeout = setTimeout(() => logout(), 15 * 60 * 1000); // 15 min
+            timeout = setTimeout(() => logout(), 5 * 60 * 1000); // 15 min
         };
 
         //Resete de timer con actividad

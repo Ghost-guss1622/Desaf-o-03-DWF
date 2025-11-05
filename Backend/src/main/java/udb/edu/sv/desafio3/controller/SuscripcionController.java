@@ -31,6 +31,7 @@ public class SuscripcionController {
         suscrip.setTipo(suscripcionDTo.getTipo());
         suscrip.setDuracionMeses(suscripcionDTo.getDuracionMeses());
         suscrip.setPrecio(suscripcionDTo.getPrecio());
+        suscrip.setEstado("Activo");
 
         Suscripcion suscripciones = suscripcionRepository.save(suscrip);
         return ResponseEntity.ok(suscripciones);
